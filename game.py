@@ -10,19 +10,20 @@ screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
 display = pygame.Surface((600,400))
 #-----------------------music setup
 #-----------------------graphical setup
-player_image = pygame.image.load('player_img.png')
-wall_image = pygame.image.load('wall_img.png')
-sign_image = pygame.image.load('sign.png')
-sign_text_intro = pygame.image.load('sign_text.png')
-sign_text_door = pygame.image.load('sign_text_door.png')
-sign_text_door_win = pygame.image.load('sign_text_door_win.png')
-enemy_image = pygame.image.load('enemy.png')
-door_image = pygame.image.load('door.png')
-dagger_image = pygame.image.load('dagger.png')
-invGrid_image = pygame.image.load('invGrid.png')
-battleMenu_image = pygame.image.load('battleMenu.png')
-cutscene_image = pygame.image.load('cutscene.png')
-portal_img = pygame.image.load('portal_img.png')
+player_image = pygame.image.load('spriteAssets/player_img.png')
+player_image.set_colorkey((248,248,248))
+wall_image = pygame.image.load('spriteAssets/wall_img.png')
+sign_image = pygame.image.load('spriteAssets/sign.png')
+sign_text_intro = pygame.image.load('spriteAssets/sign_text.png')
+sign_text_door = pygame.image.load('spriteAssets/sign_text_door.png')
+sign_text_door_win = pygame.image.load('spriteAssets/sign_text_door_win.png')
+enemy_image = pygame.image.load('spriteAssets/enemy.png')
+door_image = pygame.image.load('spriteAssets/door.png')
+dagger_image = pygame.image.load('spriteAssets/dagger.png')
+invGrid_image = pygame.image.load('spriteAssets/invGrid.png')
+battleMenu_image = pygame.image.load('spriteAssets/battleMenu.png')
+cutscene_image = pygame.image.load('spriteAssets/cutscene.png')
+portal_img = pygame.image.load('spriteAssets/portal_img.png')
 TILE_SIZE = wall_image.get_width()
 
 #-------------load sprites animations
@@ -287,6 +288,9 @@ def overworld(playerID):
     player_frame = 0
     player_flip = False
 
+    stack = ['idle']
+    currentAction = stack.pop()
+
     while inOverworld:
         display.fill((0,0,0))
 
@@ -424,14 +428,42 @@ def overworld(playerID):
 
 
         #----------------movement-----------------------
+
+        
+
+        
+    
         playerID.movement = [0,0]
-        if movingLeft:
+        if currentAction == 'idle':
+            playerID.movement[0] = 0
+            playerID.movement[1] = 0
+        if currentAction == 'movingLeft':
+##            if movingUp:
+##                playerID.movement[1] -= 1.7
+##            elif movingDown:
+##                playerID.movement[1] += 2.2
             playerID.movement[0] -= 2.2
-        if movingRight:
+            
+
+        if currentAction == 'movingRight':
+##            if movingUp:
+##                playerID.movement[1] -= 1.7
+##            elif movingDown:
+##                playerID.movement[1] += 2.2
             playerID.movement[0] += 2.6
-        if movingUp:
+            
+        elif currentAction == 'movingUp':
+##            if movingLeft:
+##                playerID.movement[0] -= 2.2
+##            elif movingRight:
+##                playerID.movement[0] += 2.6
             playerID.movement[1] -= 1.7
-        if movingDown:
+
+        elif currentAction == 'movingDown':
+##            if movingLeft:
+##                playerID.movement[0] -= 2.2
+##            elif movingRight:
+##                playerID.movement[0] += 2.6
             playerID.movement[1] += 2.2
 
         if playerID.movement[0] == 0 and playerID.movement[1] == 0:
@@ -440,6 +472,9 @@ def overworld(playerID):
         if playerID.movement[1] > 0 :
             player_action, player_frame = change_action(player_action, player_frame, 'run')
 
+
+        
+        
         if playerID.movement[1] < 0:
             player_action, player_frame = change_action(player_action, player_frame, 'runBack')
         if playerID.movement[0] < 0:
@@ -459,33 +494,35 @@ def overworld(playerID):
         player_image = animation_frames[player_img_id]
         
         display.blit(pygame.transform.flip(player_image, player_flip, False), (playerID.rect.x-scroll[0], playerID.rect.y-scroll[1]))
-        
+
+
+
         
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == KEYDOWN:
-                if event.key == K_a:
-                    movingLeft = True
-                if event.key == K_d:
-                    movingRight = True
-                if event.key == K_w:
-                    movingUp = True
+                if event.key == K_a:                    
+                    stack.append('movingLeft')
+                if event.key == K_d:                   
+                    stack.append('movingRight')
+                if event.key == K_w:                   
+                    stack.append('movingUp')
                 if event.key == K_s:
-                    movingDown = True
+                    stack.append('movingDown')
+                if event.key == K_x:
+                    stack.append('idle')
                 if event.key == K_i:
                     inventory(xupwardx)
 
-            if event.type == KEYUP:
-                if event.key == K_a:
-                    movingLeft = False
-                if event.key == K_d:
-                    movingRight = False
-                if event.key == K_w:
-                    movingUp = False
-                if event.key == K_s:
-                    movingDown = False
+                print(stack)
+                currentAction = stack.pop()
+                
+           
+
+
+
 
 
         surf = pygame.transform.scale(display, WINDOW_SIZE)
