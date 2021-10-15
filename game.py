@@ -209,15 +209,6 @@ def battleSequence(playerID, haventFought, enemy):
 #---------comment shortcut: alt + 3
 #---------uncomment shortcut: alt + 4
 
-
-
-##        if inReaction:
-##            display.blit(wall_image, (250, 130))
-##            delayTimer += dt
-##            if delayTimer >= 3:
-##                delayTimer = 0
-##                playerTurn = False
-##                inReaction = False
             
         
 
@@ -438,32 +429,15 @@ def overworld(playerID):
             playerID.movement[0] = 0
             playerID.movement[1] = 0
         if currentAction == 'movingLeft':
-##            if movingUp:
-##                playerID.movement[1] -= 1.7
-##            elif movingDown:
-##                playerID.movement[1] += 2.2
             playerID.movement[0] -= 2.2
             
-
         if currentAction == 'movingRight':
-##            if movingUp:
-##                playerID.movement[1] -= 1.7
-##            elif movingDown:
-##                playerID.movement[1] += 2.2
             playerID.movement[0] += 2.6
-            
+        
         elif currentAction == 'movingUp':
-##            if movingLeft:
-##                playerID.movement[0] -= 2.2
-##            elif movingRight:
-##                playerID.movement[0] += 2.6
             playerID.movement[1] -= 1.7
 
         elif currentAction == 'movingDown':
-##            if movingLeft:
-##                playerID.movement[0] -= 2.2
-##            elif movingRight:
-##                playerID.movement[0] += 2.6
             playerID.movement[1] += 2.2
 
         if playerID.movement[0] == 0 and playerID.movement[1] == 0:
@@ -516,7 +490,6 @@ def overworld(playerID):
                 if event.key == K_i:
                     inventory(xupwardx)
 
-                print(stack)
                 currentAction = stack.pop()
                 
            
