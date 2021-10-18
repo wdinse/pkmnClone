@@ -1,29 +1,19 @@
-import pygame, sys, math
+import pygame, sys, math 
 from pygame.locals import *
+from imageLoader import *
+
 
 #-----------------------Setup
 pygame.init()
 clock = pygame.time.Clock()
-pygame.display.set_caption('GrelloPunk2066')
+pygame.display.set_caption('pkmnClone')
 WINDOW_SIZE = (1200,800)
 screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
 display = pygame.Surface((600,400))
 #-----------------------music setup
 #-----------------------graphical setup
-player_image = pygame.image.load('spriteAssets/player_img.png')
+
 player_image.set_colorkey((248,248,248))
-wall_image = pygame.image.load('spriteAssets/wall_img.png')
-sign_image = pygame.image.load('spriteAssets/sign.png')
-sign_text_intro = pygame.image.load('spriteAssets/sign_text.png')
-sign_text_door = pygame.image.load('spriteAssets/sign_text_door.png')
-sign_text_door_win = pygame.image.load('spriteAssets/sign_text_door_win.png')
-enemy_image = pygame.image.load('spriteAssets/enemy.png')
-door_image = pygame.image.load('spriteAssets/door.png')
-dagger_image = pygame.image.load('spriteAssets/dagger.png')
-invGrid_image = pygame.image.load('spriteAssets/invGrid.png')
-battleMenu_image = pygame.image.load('spriteAssets/battleMenu.png')
-cutscene_image = pygame.image.load('spriteAssets/cutscene.png')
-portal_img = pygame.image.load('spriteAssets/portal_img.png')
 TILE_SIZE = wall_image.get_width()
 
 #-------------load sprites animations
@@ -137,14 +127,21 @@ def inventory(playerID):
     textHealth = font.render("health: " + str(playerID.currentHP)+'/'+str(playerID.maxHP), True, white, blue)
     textHealthRect = textHealth.get_rect()
     textHealthRect.center = (82, 332)
+    cursX = 49
+    cursY = 49
     inInventory = True
     while inInventory:
         display.fill((0,0,0))
         display.blit(textGold, textGoldRect)
         display.blit(textHealth, textHealthRect)
         display.blit(invGrid_image, (50,50))
+        display.blit(cursor_image, (cursX,cursY))
+
         if 'dagger' in playerID.items:
-            display.blit(dagger_image, (50,50))
+            display.blit(dagger_image, (273,50))
+
+        if 'hpPotion' in playerID.items:
+            display.blit(hpPotionIcon_image, (49,49))
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -153,11 +150,79 @@ def inventory(playerID):
             if event.type == KEYDOWN:
                 if event.key == K_i:
                     inInventory = False
+                if event.key == K_RIGHT and cursX < 145:
+                    cursX += 32
+                if event.key == K_LEFT and cursX > 49:
+                    cursX -= 32
+                if event.key == K_UP and cursY > 49:
+                    cursY -= 32
+                if event.key == K_DOWN and cursY < 209:
+                    cursY += 32
         
         surf = pygame.transform.scale(display, WINDOW_SIZE)
         screen.blit(surf, (0,0))
         pygame.display.update()
         dt = clock.tick(60)/1000
+
+#----------gameover
+def gameOver():
+    inScreen = True
+
+    while inScreen:
+        display.fill((0,0,0))
+        display.blit(gameOver_image, (320,130))
+
+        
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            
+        
+        surf = pygame.transform.scale(display, WINDOW_SIZE)
+        screen.blit(surf, (0,0))
+        pygame.display.update()
+
+def itemSelect(playerID):
+    inScreen = True
+    cursX = 49
+    cursY = 49
+    while inScreen:
+        display.fill((0,0,0))
+        display.blit(itemSelect_image, (50,50))
+        display.blit(cursor_image, (cursX,cursY))
+        display.blit(use_image, (200, 70))
+
+        if 'hpPotion' in playerID.items:
+            display.blit(hpPotionIcon_image, (49,49))
+            slot1 = 'potion'
+
+        for event in pygame.event.get():
+            if event.type == KEYDOWN:
+                if event.key == K_b:
+                    inScreen = False
+                if event.key == K_i:
+                    inInventory = False
+                if event.key == K_RIGHT and cursX < 145:
+                    cursX += 32
+                if event.key == K_LEFT and cursX > 49:
+                    cursX -= 32
+                if event.key == K_UP and cursY > 49:
+                    cursY -= 32
+                if event.key == K_DOWN and cursY < 209:
+                    cursY += 32
+                if event.key == K_u and cursX == 49 and cursY == 49 and slot1 == 'potion':
+                    playerID.currentHP = playerID.maxHP
+                    playerID.items.remove('hpPotion')
+                    slot1 = 'empty'
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+
+        surf = pygame.transform.scale(display, WINDOW_SIZE)
+        screen.blit(surf, (0,0))
+        pygame.display.update()
     
 
 #-----------------------BattleSequence
@@ -205,6 +270,10 @@ def battleSequence(playerID, haventFought, enemy):
 
             if takenDmg:
                 display.blit(textDmgTaken, textRectDmgTaken)
+                if playerID.currentHP <= 0:
+                    gameOver()
+                    
+                    
 
 #---------comment shortcut: alt + 3
 #---------uncomment shortcut: alt + 4
@@ -222,10 +291,12 @@ def battleSequence(playerID, haventFought, enemy):
                 sys.exit()
             if event.type == KEYDOWN:
                 #-----------what happens when you escape with [enter]
-                if event.key == K_RETURN:
+                if event.key == K_c:
                     inBattle = False
                     haventFought = False
-                if event.key == K_v and playerTurn:
+                if event.key == K_b:
+                    itemSelect(playerID)
+                if event.key == K_a and playerTurn:
                     
 
                     enemy.hp -= playerID.attackPower
@@ -258,7 +329,7 @@ def battleSequence(playerID, haventFought, enemy):
     return haventFought
 #-----------------------Overworld Zone Function Setup (not battle)
 xupRect = pygame.Rect(32,32, player_image.get_width(), player_image.get_height())
-xupwardx = player(xupRect, [0,0], 100, 100, 20, [], 0)
+xupwardx = player(xupRect, [0,0], 30, 100, 20, [], 0)
 true_scroll = [0,0]
 
 
@@ -273,6 +344,7 @@ def overworld(playerID):
     haventFought_3 = True
     haventFought_4 = True
     haventPickedUpDagger = True
+    haventPickedUpFirstHpPotion = True
     delayTimer = 0
 
     player_action = 'idle'
@@ -318,6 +390,8 @@ def overworld(playerID):
         signRect_2 = pygame.Rect(640,200, TILE_SIZE, TILE_SIZE)
 
 
+        #-----------------item pickups
+        
         daggerRect = pygame.Rect(1000, 120, TILE_SIZE, TILE_SIZE)
         if haventPickedUpDagger:
             display.blit(dagger_image, (1000-scroll[0], 120-scroll[1]))
@@ -326,6 +400,14 @@ def overworld(playerID):
             haventPickedUpDagger = False
             #add dagger to inv
             playerID.items.append('dagger')
+
+        firstHpPotionRect = pygame.Rect(200, 120, TILE_SIZE, TILE_SIZE)
+        if haventPickedUpFirstHpPotion:
+            display.blit(hpPotion_image, (200-scroll[0], 120-scroll[1]))
+
+        if playerID.rect.colliderect(firstHpPotionRect) and 'hpPotion' not in playerID.items:
+            haventPickedUpFirstHpPotion = False
+            playerID.items.append('hpPotion')
 
         
 
@@ -489,10 +571,11 @@ def overworld(playerID):
                     stack.append('idle')
                 if event.key == K_i:
                     inventory(xupwardx)
+                    stack.append('inInventory')
 
                 currentAction = stack.pop()
-                
-           
+
+            
 
 
 
