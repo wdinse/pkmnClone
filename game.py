@@ -3,6 +3,34 @@ from pygame.locals import *
 from imageLoader import *
 
 
+#-----------------TODO
+##TODO:
+##
+##redesign login screen
+##Upon opening program --> Title splash art --> below that, list three save files
+##select one of the files using 1, 2, 3
+##if file1 == empty:
+##    print('empty file') inside empty rectangle
+##    if keyDown == K_1: 
+##        allow player to create new file here.
+##        username = typeUsername()
+##if file1 == empty:
+##    print('empty file')
+##    if keyDown == K_2: 
+##        allow player to create new file here.
+##        username = typeUsername()
+##if file1 == empty:
+##    print('empty file')
+##    if keyDown == K_3: 
+##        allow player to create new file here.
+##        username = typeUsername()
+##else:
+##    give option to either 1) load or 2) delete
+##
+##
+##      
+
+
 #-----------------------Setup
 pygame.init()
 clock = pygame.time.Clock()
@@ -69,7 +97,8 @@ gameMap = load_map('map')
 #TODO: make maxHp and current hp separate
 
 class player:
-    def __init__(self, rect, movement, currentHP, maxHP, attackPower, items, gold):
+    def __init__(self, username, rect, movement, currentHP, maxHP, attackPower, items, gold):
+        self.username = username
         self.rect = rect
         self.movement = movement
         self.currentHP = currentHP
@@ -184,6 +213,8 @@ def gameOver():
         screen.blit(surf, (0,0))
         pygame.display.update()
 
+#----------------item selection screen during an encounter
+
 def itemSelect(playerID):
     inScreen = True
     cursX = 49
@@ -290,7 +321,6 @@ def battleSequence(playerID, haventFought, enemy):
                 pygame.quit()
                 sys.exit()
             if event.type == KEYDOWN:
-                #-----------what happens when you escape with [enter]
                 if event.key == K_c:
                     inBattle = False
                     haventFought = False
@@ -327,9 +357,80 @@ def battleSequence(playerID, haventFought, enemy):
     playerID.gold += enemy.goldLoot
     playerID.attackPower = baseAttack
     return haventFought
+
+#------------Title Screen (put in separate py file later)
+
+def titleScreen():
+    inTitleScreen = True
+    while inTitleScreen:
+        
+        display.fill((0,0,0))
+        display.blit(titleMenu_image, (50,50))
+        display.blit(files_image, (190, 180))
+        
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_1:
+                    username = typeUsername()
+                    playerRect = pygame.Rect(32,32, player_image.get_width(), player_image.get_height())
+                    playerObject = player(username, playerRect, [0,0], 30, 100, 20, [], 0)
+                    return playerObject
+                
+                    
+                    
+
+        surf = pygame.transform.scale(display, WINDOW_SIZE)
+        screen.blit(surf, (0,0))
+        pygame.display.update()
+
+#------allow user to type username. display text as user types
+
+def typeUsername():
+    inUsernameScreen = True
+    text = ''
+    while inUsernameScreen:
+        display.fill((0,0,0))
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_RETURN:
+                    return text
+                elif event.key == K_BACKSPACE:
+                    text = text[:-1]
+                else:
+                    text += event.unicode
+        
+
+#-------------------pause menu function (TODO: put in separate py file)
+
+def pause():
+    inPauseMenu = True
+    while inPauseMenu:
+        display.fill((0,0,0))
+        display.blit(pauseMenu_image, (50,50))
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                if event.key == K_p:
+                    inPauseMenu = False
+                
+                    
+                    
+
+        surf = pygame.transform.scale(display, WINDOW_SIZE)
+        screen.blit(surf, (0,0))
+        pygame.display.update()
+        
 #-----------------------Overworld Zone Function Setup (not battle)
-xupRect = pygame.Rect(32,32, player_image.get_width(), player_image.get_height())
-xupwardx = player(xupRect, [0,0], 30, 100, 20, [], 0)
+
 true_scroll = [0,0]
 
 
@@ -436,7 +537,7 @@ def overworld(playerID):
             movingDown = False
             movingLeft = False
             movingRight = False
-            haventFought_1 = battleSequence(xupwardx, haventFought_1, enemyUnit1)
+            haventFought_1 = battleSequence(playerID, haventFought_1, enemyUnit1)
 
 
         #-----------------First Battle With dagger
@@ -454,7 +555,7 @@ def overworld(playerID):
             movingDown = False
             movingLeft = False
             movingRight = False
-            haventFought_2 = battleSequence(xupwardx, haventFought_2, enemyUnit2)
+            haventFought_2 = battleSequence(playerID, haventFought_2, enemyUnit2)
 
         #------------enter portal
         if not haventFought_2:
@@ -484,7 +585,7 @@ def overworld(playerID):
             movingDown = False
             movingLeft = False
             movingRight = False
-            haventFought_3 = battleSequence(xupwardx, haventFought_3, enemyUnit3)
+            haventFought_3 = battleSequence(playerID, haventFought_3, enemyUnit3)
 
         if haventFought_4:
             display.blit(enemy_image, (920-scroll[0], 765-scroll[1]))
@@ -495,7 +596,7 @@ def overworld(playerID):
             movingDown = False
             movingLeft = False
             movingRight = False
-            haventFought_4 = battleSequence(xupwardx, haventFought_4, enemyUnit4)
+            haventFought_4 = battleSequence(playerID, haventFought_4, enemyUnit4)
 
 
 
@@ -559,21 +660,39 @@ def overworld(playerID):
                 pygame.quit()
                 sys.exit()
             if event.type == KEYDOWN:
+                print('keypress')
+                validKeyPressed = False
                 if event.key == K_a:                    
                     stack.append('movingLeft')
+                    validKeyPressed = True
                 if event.key == K_d:                   
                     stack.append('movingRight')
+                    validKeyPressed = True
                 if event.key == K_w:                   
                     stack.append('movingUp')
+                    validKeyPressed = True
                 if event.key == K_s:
                     stack.append('movingDown')
+                    validKeyPressed = True
                 if event.key == K_x:
                     stack.append('idle')
+                    validKeyPressed = True
                 if event.key == K_i:
-                    inventory(xupwardx)
+                    inventory(playerID)
                     stack.append('inInventory')
-
-                currentAction = stack.pop()
+                    validKeyPressed = True
+                if event.key == K_p:
+                    pause()
+                    stack.append('inPauseMenu')
+                    validKeyPressed = True
+                if validKeyPressed:
+                    currentAction = stack.pop()
+            elif event.type == pygame.KEYUP:
+                keysPressed = pygame.key.get_pressed()
+                if not keysPressed[K_a] and not keysPressed[K_s] and not keysPressed[K_w] and not keysPressed[K_d]:
+                    print('happening')
+                    stack.append('idle')
+                    currentAction = stack.pop()
 
             
 
@@ -588,7 +707,8 @@ def overworld(playerID):
 
 #-----------------------MainBody of code
 
-overworld(xupwardx)
+player = titleScreen()
+overworld(player)
         
 
 
