@@ -19,4 +19,9 @@ portal_img = pygame.image.load('spriteAssets/portal_img.png')
 itemSelect_image = pygame.image.load('spriteAssets/itemSelect.png')
 cursor_image = pygame.image.load('spriteAssets/cursor.png')
 use_image = pygame.image.load('spriteAssets/use.png')
+titleMenu_image = pygame.image.load('spriteAssets/titleMenu.png')
+pauseMenu_image = pygame.image.load('spriteAssets/pauseMenu.png')
+files_image = pygame.image.load('spriteAssets/files.png')
+
+
 
