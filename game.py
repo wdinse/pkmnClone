@@ -1,34 +1,15 @@
-import pygame, sys, math 
+import pygame, sys, math, os, ast
 from pygame.locals import *
 from imageLoader import *
+from inventory import *
 
 
 #-----------------TODO
 ##TODO:
-##
-##redesign login screen
-##Upon opening program --> Title splash art --> below that, list three save files
-##select one of the files using 1, 2, 3
-##if file1 == empty:
-##    print('empty file') inside empty rectangle
-##    if keyDown == K_1: 
-##        allow player to create new file here.
-##        username = typeUsername()
-##if file1 == empty:
-##    print('empty file')
-##    if keyDown == K_2: 
-##        allow player to create new file here.
-##        username = typeUsername()
-##if file1 == empty:
-##    print('empty file')
-##    if keyDown == K_3: 
-##        allow player to create new file here.
-##        username = typeUsername()
-##else:
-##    give option to either 1) load or 2) delete
-##
-##
-##      
+## add slots 2 and 3 for save files
+#
+# make gold be used for something
+#
 
 
 #-----------------------Setup
@@ -38,10 +19,12 @@ pygame.display.set_caption('pkmnClone')
 WINDOW_SIZE = (1200,800)
 screen = pygame.display.set_mode(WINDOW_SIZE, 0, 32)
 display = pygame.Surface((600,400))
+
 #-----------------------music setup
 #-----------------------graphical setup
 
 player_image.set_colorkey((248,248,248))
+merchant_image.set_colorkey((248,248,248))
 TILE_SIZE = wall_image.get_width()
 
 #-------------load sprites animations
@@ -145,53 +128,6 @@ def move(rect, movement, tiles):
 
 
 #-----------------------Inventory
-def inventory(playerID):
-
-    white = (255,255,255)
-    blue =  (0,0, 128)
-    font = pygame.font.Font('freesansbold.ttf', 16)
-    textGold = font.render("gold: " + str(playerID.gold), True, white, blue)
-    textGoldRect = textGold.get_rect()
-    textGoldRect.center = (50,300)
-    textHealth = font.render("health: " + str(playerID.currentHP)+'/'+str(playerID.maxHP), True, white, blue)
-    textHealthRect = textHealth.get_rect()
-    textHealthRect.center = (82, 332)
-    cursX = 49
-    cursY = 49
-    inInventory = True
-    while inInventory:
-        display.fill((0,0,0))
-        display.blit(textGold, textGoldRect)
-        display.blit(textHealth, textHealthRect)
-        display.blit(invGrid_image, (50,50))
-        display.blit(cursor_image, (cursX,cursY))
-
-        if 'dagger' in playerID.items:
-            display.blit(dagger_image, (273,50))
-
-        if 'hpPotion' in playerID.items:
-            display.blit(hpPotionIcon_image, (49,49))
-
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN:
-                if event.key == K_i:
-                    inInventory = False
-                if event.key == K_RIGHT and cursX < 145:
-                    cursX += 32
-                if event.key == K_LEFT and cursX > 49:
-                    cursX -= 32
-                if event.key == K_UP and cursY > 49:
-                    cursY -= 32
-                if event.key == K_DOWN and cursY < 209:
-                    cursY += 32
-        
-        surf = pygame.transform.scale(display, WINDOW_SIZE)
-        screen.blit(surf, (0,0))
-        pygame.display.update()
-        dt = clock.tick(60)/1000
 
 #----------gameover
 def gameOver():
@@ -201,14 +137,14 @@ def gameOver():
         display.fill((0,0,0))
         display.blit(gameOver_image, (320,130))
 
-        
+
 
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
-            
-        
+
+
         surf = pygame.transform.scale(display, WINDOW_SIZE)
         screen.blit(surf, (0,0))
         pygame.display.update()
@@ -254,7 +190,7 @@ def itemSelect(playerID):
         surf = pygame.transform.scale(display, WINDOW_SIZE)
         screen.blit(surf, (0,0))
         pygame.display.update()
-    
+
 
 #-----------------------BattleSequence
 # TODO: make an enemy object parameter so that this
@@ -271,7 +207,7 @@ def battleSequence(playerID, haventFought, enemy):
     if 'dagger' in playerID.items:
         playerID.attackPower += 10
 
-    
+
     red = (255,0,0)
     blue =  (0,0, 128)
     font = pygame.font.Font('freesansbold.ttf', 16)
@@ -296,26 +232,26 @@ def battleSequence(playerID, haventFought, enemy):
         pygame.draw.rect(display, (25, 228, 59), (400, 90, enemy.hp, 4))
 
         if playerTurn:
-            
+
             display.blit(battleMenu_image, (50, 130))
 
             if takenDmg:
                 display.blit(textDmgTaken, textRectDmgTaken)
                 if playerID.currentHP <= 0:
                     gameOver()
-                    
-                    
+
+
 
 #---------comment shortcut: alt + 3
 #---------uncomment shortcut: alt + 4
 
-            
-        
+
+
 
         if enemy.hp <= 0:
             inBattle = False
             haventFought = False
-        
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -327,13 +263,13 @@ def battleSequence(playerID, haventFought, enemy):
                 if event.key == K_b:
                     itemSelect(playerID)
                 if event.key == K_a and playerTurn:
-                    
+
 
                     enemy.hp -= playerID.attackPower
                     delayTimer = 0
                     playerTurn = False
-                
-                    
+
+
 
 
         if not playerTurn:
@@ -346,8 +282,8 @@ def battleSequence(playerID, haventFought, enemy):
                 playerTurn = True
                 takenDmg = True
                 delayTimer = 0
-            
-        
+
+
         surf = pygame.transform.scale(display, WINDOW_SIZE)
         screen.blit(surf, (0,0))
         pygame.display.update()
@@ -363,28 +299,58 @@ def battleSequence(playerID, haventFought, enemy):
 def titleScreen():
     inTitleScreen = True
     while inTitleScreen:
-        
+
         display.fill((0,0,0))
         display.blit(titleMenu_image, (50,50))
-        display.blit(files_image, (190, 180))
-        
+        display.blit(files_image, (206, 196))
+
+        if os.stat('saveFiles/file1.txt').st_size != 0:
+            file = open('saveFiles/file1.txt', 'r')
+            gatherData = file.read()
+            listData = ast.literal_eval(gatherData)
+            playerObject = player(listData[0], pygame.Rect(listData[1][0], listData[1][1], listData[1][2], listData[1][3]), listData[2], listData[3], listData[4], listData[5], listData[6], listData[7])
+            display.blit(fileOccupied_image, (214, 204))
+            font = pygame.font.Font('alagard.ttf', 16)
+            usernameText = font.render(' 1:   ' + str(listData[0]), True, (255,255,255),(0,0,128))
+            usernameTextRect = usernameText.get_rect()
+            usernameTextRect.center = (278,220)
+            display.blit(usernameText, usernameTextRect)
+            file.close
+
+
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
             if event.type == KEYDOWN:
-                if event.key == K_1:
+                if event.key == K_1 and os.stat('saveFiles/file1.txt').st_size == 0:
+                    print('this file is empty yay :)')
                     username = typeUsername()
                     playerRect = pygame.Rect(32,32, player_image.get_width(), player_image.get_height())
                     playerObject = player(username, playerRect, [0,0], 30, 100, 20, [], 0)
+                    file = open('saveFiles/file1.txt', 'w')
+                    str_data = [playerObject.username, [playerObject.rect.left,playerObject.rect.top, playerObject.rect.width, playerObject.rect.height], playerObject.movement, playerObject.currentHP, playerObject.maxHP, playerObject.attackPower, playerObject.items, playerObject.gold]
+                    file.write(str(str_data))
+                    file.close()
                     return playerObject
-                
-                    
-                    
+                elif event.key == K_1:
+                    return playerObject
+
+
+
 
         surf = pygame.transform.scale(display, WINDOW_SIZE)
         screen.blit(surf, (0,0))
         pygame.display.update()
+
+#------------------------save Function
+def saveGame(playerObject):
+    file = open('saveFiles/file1.txt', 'w')
+    file.truncate(0)
+    str_data = [playerObject.username, [playerObject.rect.left,playerObject.rect.top, playerObject.rect.width, playerObject.rect.height], playerObject.movement, playerObject.currentHP, playerObject.maxHP, playerObject.attackPower, playerObject.items, playerObject.gold]
+    file.write(str(str_data))
+    file.close
 
 #------allow user to type username. display text as user types
 
@@ -404,11 +370,11 @@ def typeUsername():
                     text = text[:-1]
                 else:
                     text += event.unicode
-        
+
 
 #-------------------pause menu function (TODO: put in separate py file)
 
-def pause():
+def pause(playerObject):
     inPauseMenu = True
     while inPauseMenu:
         display.fill((0,0,0))
@@ -421,14 +387,20 @@ def pause():
             if event.type == KEYDOWN:
                 if event.key == K_p:
                     inPauseMenu = False
-                
-                    
-                    
+                if event.key == K_s:
+                    saveGame(playerObject)
+                    inPauseMenu = False
+                if event.key == K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+
+
+
 
         surf = pygame.transform.scale(display, WINDOW_SIZE)
         screen.blit(surf, (0,0))
         pygame.display.update()
-        
+
 #-----------------------Overworld Zone Function Setup (not battle)
 
 true_scroll = [0,0]
@@ -456,9 +428,8 @@ def overworld(playerID):
     currentAction = stack.pop()
 
     while inOverworld:
-        display.fill((0,0,0))
+        display.fill((34,139,34))
 
-        
 
         true_scroll[0] += (playerID.rect.x-true_scroll[0]-280)/20
         true_scroll[1] += (playerID.rect.y-true_scroll[1]-150)/20
@@ -475,15 +446,17 @@ def overworld(playerID):
                     display.blit(wall_image, (x * TILE_SIZE-scroll[0], y * TILE_SIZE-scroll[1]))
                 if tile == '2' and haventFought_1:
                     display.blit(door_image, (x * TILE_SIZE-scroll[0], y * TILE_SIZE-scroll[1]))
+                if tile == '0':
+                    display.blit(floorTile_image, (x * TILE_SIZE-scroll[0], y * TILE_SIZE-scroll[1]))
                 elif tile == '2' and not haventFought_1:
                     gameMap[y][x] = '0'
-                
+
                 if tile != '0':
                     tile_rects.append(pygame.Rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE))
                 x += 1
             y += 1
 
-        
+
         display.blit(sign_image, (300-scroll[0],100-scroll[1]))
         signRect_1 = pygame.Rect(300,100, TILE_SIZE, TILE_SIZE)
 
@@ -492,12 +465,12 @@ def overworld(playerID):
 
 
         #-----------------item pickups
-        
+
         daggerRect = pygame.Rect(1000, 120, TILE_SIZE, TILE_SIZE)
         if haventPickedUpDagger:
             display.blit(dagger_image, (1000-scroll[0], 120-scroll[1]))
 
-        if playerID.rect.colliderect(daggerRect):
+        if playerID.rect.colliderect(daggerRect) and 'dagger' not in playerID.items:
             haventPickedUpDagger = False
             #add dagger to inv
             playerID.items.append('dagger')
@@ -510,9 +483,9 @@ def overworld(playerID):
             haventPickedUpFirstHpPotion = False
             playerID.items.append('hpPotion')
 
-        
 
-            
+
+
 
 
 
@@ -530,7 +503,7 @@ def overworld(playerID):
             display.blit(sign_text_door, (640-scroll[0], 232-scroll[1]))
 
         if playerID.rect.colliderect(signRect_2) and not haventFought_1:
-            display.blit(sign_text_door_win, (640-scroll[0], 232-scroll[1]))    
+            display.blit(sign_text_door_win, (640-scroll[0], 232-scroll[1]))
 
         if playerID.rect.colliderect(enemyRect_1) and haventFought_1:
             movingUp = False
@@ -541,14 +514,14 @@ def overworld(playerID):
 
 
         #-----------------First Battle With dagger
-        
+
         if haventFought_2:
             display.blit(enemy_image, (1400-scroll[0], 50-scroll[1]))
 
 
         enemyUnit2 = enemy(100, 10, 20)
         enemyRect_2 = pygame.Rect(1400, 50, TILE_SIZE, TILE_SIZE)
-        
+
 
         if playerID.rect.colliderect(enemyRect_2) and haventFought_2:
             movingUp = False
@@ -566,7 +539,7 @@ def overworld(playerID):
             #------change player coordinates to new area
             display.blit(cutscene_image, (50, 70))
             delayTimer += dt
-            if delayTimer >= 5:   
+            if delayTimer >= 5:
                 playerID.rect.x = 50
                 playerID.rect.y = 600
         else:
@@ -598,25 +571,30 @@ def overworld(playerID):
             movingRight = False
             haventFought_4 = battleSequence(playerID, haventFought_4, enemyUnit4)
 
+        display.blit(merchant_image, (1144-scroll[0], 610-scroll[1]))
+        merchantRect = pygame.Rect(1144, 610, TILE_SIZE, TILE_SIZE)
+        if playerID.rect.colliderect(merchantRect):
+            print('welcome to my shop!')
+
 
 
 
         #----------------movement-----------------------
 
-        
 
-        
-    
+
+
+
         playerID.movement = [0,0]
         if currentAction == 'idle':
             playerID.movement[0] = 0
             playerID.movement[1] = 0
         if currentAction == 'movingLeft':
             playerID.movement[0] -= 2.2
-            
+
         if currentAction == 'movingRight':
             playerID.movement[0] += 2.6
-        
+
         elif currentAction == 'movingUp':
             playerID.movement[1] -= 1.7
 
@@ -630,18 +608,18 @@ def overworld(playerID):
             player_action, player_frame = change_action(player_action, player_frame, 'run')
 
 
-        
-        
+
+
         if playerID.movement[1] < 0:
             player_action, player_frame = change_action(player_action, player_frame, 'runBack')
         if playerID.movement[0] < 0:
             player_action, player_frame = change_action(player_action, player_frame, 'runLeft')
         if playerID.movement[0] > 0:
             player_action, player_frame = change_action(player_action, player_frame, 'runRight')
-            
-            
 
-        
+
+
+
         playerID.rect, collisions = move(playerID.rect, playerID.movement, tile_rects)
 
         player_frame += 1
@@ -649,12 +627,12 @@ def overworld(playerID):
             player_frame = 0
         player_img_id = animation_database[player_action][player_frame]
         player_image = animation_frames[player_img_id]
-        
+
         display.blit(pygame.transform.flip(player_image, player_flip, False), (playerID.rect.x-scroll[0], playerID.rect.y-scroll[1]))
 
 
 
-        
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -662,13 +640,13 @@ def overworld(playerID):
             if event.type == KEYDOWN:
                 print('keypress')
                 validKeyPressed = False
-                if event.key == K_a:                    
+                if event.key == K_a:
                     stack.append('movingLeft')
                     validKeyPressed = True
-                if event.key == K_d:                   
+                if event.key == K_d:
                     stack.append('movingRight')
                     validKeyPressed = True
-                if event.key == K_w:                   
+                if event.key == K_w:
                     stack.append('movingUp')
                     validKeyPressed = True
                 if event.key == K_s:
@@ -678,11 +656,11 @@ def overworld(playerID):
                     stack.append('idle')
                     validKeyPressed = True
                 if event.key == K_i:
-                    inventory(playerID)
+                    inventory(playerID, display, WINDOW_SIZE, screen, clock)
                     stack.append('inInventory')
                     validKeyPressed = True
                 if event.key == K_p:
-                    pause()
+                    pause(playerID)
                     stack.append('inPauseMenu')
                     validKeyPressed = True
                 if validKeyPressed:
@@ -694,7 +672,7 @@ def overworld(playerID):
                     stack.append('idle')
                     currentAction = stack.pop()
 
-            
+
 
 
 
@@ -709,7 +687,3 @@ def overworld(playerID):
 
 player = titleScreen()
 overworld(player)
-        
-
-
-

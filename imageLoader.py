@@ -22,6 +22,6 @@ use_image = pygame.image.load('spriteAssets/use.png')
 titleMenu_image = pygame.image.load('spriteAssets/titleMenu.png')
 pauseMenu_image = pygame.image.load('spriteAssets/pauseMenu.png')
 files_image = pygame.image.load('spriteAssets/files.png')
-
-
-
+fileOccupied_image = pygame.image.load('spriteAssets/fileOccupied.png')
+merchant_image = pygame.image.load('spriteAssets/merchant.png')
+floorTile_image = pygame.image.load('spriteAssets/floorTile.png')
